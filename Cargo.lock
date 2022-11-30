@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "ch03"
-version = "0.1.0"
+name = "matrix"
+version = "0.2.0"

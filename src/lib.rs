@@ -1,12 +1,14 @@
 use std::fmt;
-type MatrixResult<T> = std::result::Result<T, MatrixErrors>;
+type MatrixResult<Matrix> = std::result::Result<Matrix, MatrixErrors>;
 
+#[derive(Debug)]
 pub enum MatrixErrors {
-    MismatchedOrders
+    MismatchedOrders,
+    InvalidMatrix
 }
 
 #[derive(PartialEq)]
-pub struct Order {
+struct Order {
     rows: usize,
     columns: usize
 }
@@ -26,7 +28,7 @@ impl fmt::Display for Matrix {
     }
 }
 impl Matrix {
-    pub fn new (vectors: &Vec<Vec<f32>>) -> Matrix {
+    pub fn new (vectors: &Vec<Vec<f32>>) -> MatrixResult<Matrix> {
         
         // Columns
         let mut columns: Option<usize> = None;
@@ -34,7 +36,7 @@ impl Matrix {
             match columns {
                 Some(val) => {
                     if val != row.len() {
-                        panic!("InvalidMatrix");
+                        return Err(MatrixErrors::InvalidMatrix);
                     }
                 },
                 None => columns = Some(row.len())
@@ -49,10 +51,10 @@ impl Matrix {
             vectors[0].len()
         };
 
-        Matrix {
+        Ok(Matrix {
             vectors: vectors.to_vec(),
             order: Order { rows, columns }
-        }
+        })
     }
 
     pub fn add (&self, other: &Matrix) -> MatrixResult<Matrix> {
@@ -73,10 +75,10 @@ impl Matrix {
             matrix_vectors.push(row_vector);
         }
 
-        Ok(Matrix::new(&matrix_vectors))
+        Matrix::new(&matrix_vectors)
     }
 
-    pub fn transpose(&self) -> Matrix {
+    pub fn transpose(&self) -> MatrixResult<Matrix> {
         let mut matrix_vectors: Vec<Vec<f32>> = Vec::new();
         for c in 0..self.order.columns {
             let mut new_row: Vec<f32> = Vec::new();
@@ -120,11 +122,11 @@ impl Matrix {
             matrix_vectors.push(new_row_vector);
         }
 
-        Ok(Matrix::new(&matrix_vectors))
+        Matrix::new(&matrix_vectors)
     }
 }
 
-pub fn scalar_mult(row: &Vec<f32>, col: &Vec<f32>) -> f32 {
+fn scalar_mult(row: &Vec<f32>, col: &Vec<f32>) -> f32 {
 
     let mut sum: f32 = 0.0;
     for i in 0..row.len() {
